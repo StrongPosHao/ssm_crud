@@ -61,7 +61,7 @@
                         <label class="col-sm-2 control-label">deptName</label>
                         <div class="col-sm-4">
                             <!-- 部门提交部门id即可 -->
-                            <select class="form-control" name="dId">
+                            <select class="form-control" name="dId" id="dept_add_select">
 
                             </select>
                         </div>
@@ -70,7 +70,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary">保存</button>
+                <button type="button" class="btn btn-primary" id="emp_save_btn">保存</button>
             </div>
         </div>
     </div>
@@ -119,6 +119,8 @@
         <!--分页条信息-->
         <div class="col-md-6" id="page_nav_area">
             <script type="text/javascript">
+
+                var totalRecord;
                 // 1.页面加载完成以后，直接发送一个ajax请求，要到分页数据
                 $(function () {
                     // 去首页
@@ -173,6 +175,7 @@
                     $("#page_info_area").empty();
                     $("#page_info_area").append("当前" + result.extend.pageInfo.pageNum + "页, 总共" +
                         result.extend.pageInfo.pages + "页, 共" + result.extend.pageInfo.total + "条记录")
+                    totalRecord = result.extend.pageInfo.total;
                 }
 
                 // 解析显示分页条, 点击分页要能去下一页...
@@ -230,11 +233,51 @@
                     var navEle = $("<nav></nav>").append(ul);
                     navEle.appendTo("#page_nav_area");
                 }
-
+                // 点击新增按钮弹出模态框
                 $("#emp_add_modal_btn").click(function () {
-                   $("#empAddModal").modal({
+                    // 发出ajax请求，查出部门信息，显示在下拉列表中
+                    getDepts();
+                    // 弹出模态框
+                    $("#empAddModal").modal({
                       backdrop: "static"
                    });
+
+                });
+
+                function getDepts() {
+                    $.ajax({
+                        url: "${APP_PATH}/depts",
+                        type: "GET",
+                        success: function (result) {
+                            // console.log(result);
+                            // 显示部门信息在下拉列表中
+                            // $("#empAddModal select").append("")
+                            $.each(result.extend.depts, function () {
+                                var optionEle = $("<option></option>").append(this.deptName).attr("value", this.deptId);
+                                optionEle.appendTo("#empAddModal select");
+                            });
+                        }
+                    });
+                }
+
+                $("#emp_save_btn").click(function () {
+                    //1.模态框中填写的表单数据提交给服务器进行保存
+                    //2.发送ajax请求保存员工
+                    $.ajax({
+                        url: "${APP_PATH}/emp",
+                        type: "POST",
+                        data: $("#empAddModal form").serialize(),
+                        success: function(result) {
+                            // alert(result.msg);
+                            // 员工保存成功
+                            // 1.关闭模态框
+                            $("#empAddModal").modal("hide");
+
+                            // 2.来到最后一页，显示刚才保存的资源
+                            // 发送ajax请求显示最后一夜数据即可
+                            to_page(totalRecord);
+                        }
+                    });
                 });
 
             </script>
