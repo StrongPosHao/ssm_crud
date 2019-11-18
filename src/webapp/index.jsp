@@ -235,8 +235,20 @@
                     var navEle = $("<nav></nav>").append(ul);
                     navEle.appendTo("#page_nav_area");
                 }
+
+                //清空表单样式及内容
+                function reset_form(ele) {
+                    $(ele)[0].reset();
+                    // 清空表单样式
+                    $(ele).find("*").removeClass("has-error has-success");
+                    $(ele).find(".help-block").text("");
+                }
+
                 // 点击新增按钮弹出模态框
                 $("#emp_add_modal_btn").click(function () {
+                    // 清楚表单数据（表单完整重置(表单的数据，表单的样式))
+                    reset_form("#empAddModal form");
+                    // $("#empAddModal form")[0].reset();
                     // 发出ajax请求，查出部门信息，显示在下拉列表中
                     getDepts();
                     // 弹出模态框
@@ -292,14 +304,34 @@
                     // 清楚当前元素的校验状态
                     $(ele).parent().removeClass("has-success has-error");
                     $(ele).next("span").text("");
-                    if ("success" == status) {
+                    if ("success" === status) {
                         $(ele).parent().addClass("has-success");
-                        $(ele).next("span").text("");
-                    } else if ("error" == status) {
+                        $(ele).next("span").text(msg);
+                    } else if ("error" === status) {
                         $(ele).parent().addClass("has-error");
                         $(ele).next("span").text(msg);
                     }
                 }
+
+                // 请求校验用户名可用
+                $("#empName_add_input").change(function() {
+                    // 发送ajax请求校验用户名可用
+                    var empName = this.value;
+                    $.ajax({
+                        url: "${APP_PATH}/checkuser",
+                        type: "POST",
+                        data: "empName=" + empName,
+                        success: function (result) {
+                            if (result.code === 100) {
+                                show_validate_msg("#empName_add_input", "success", "用户名可用");
+                                $("#emp_save_btn").attr("ajax-va", "success");
+                            } else {
+                                show_validate_msg("#empName_add_input", "error", result.extend.va_msg);
+                                $("#emp_save_btn").attr("ajax-va", "error");
+                            }
+                        }
+                    });
+                });
 
                 // 点击保存，保存员工
                 $("#emp_save_btn").click(function () {
@@ -308,6 +340,11 @@
                     if (!validate_add_form()) {
                         return false;
                     }
+                    //1.判断之前的ajax用户名校验是否成功。如果成功
+                    if($(this).attr("ajax-va") === "error") {
+                        return false;
+                    }
+
                     //2.发送ajax请求保存员工
                     $.ajax({
                         url: "${APP_PATH}/emp",
