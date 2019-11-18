@@ -38,12 +38,14 @@
                         <label class="col-sm-2 control-label">empName</label>
                         <div class="col-sm-10">
                             <input type="text" name="empName" class="form-control" id="empName_add_input" placeholder="empName">
+                            <span id="helpBlock" class="help-block"></span>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">email</label>
                         <div class="col-sm-10">
                             <input type="text" name="email" class="form-control" id="email_add_input" placeholder="email@example.com">
+                            <span id="helpBlock1" class="help-block"></span>
                         </div>
                     </div>
                     <div class="form-group">
@@ -266,17 +268,37 @@
                     var empName = $("#empName_add_input").val();
                     var regName = /(^[A-Za-z0-9_-]{6,16}$)|(^[\u2E80-\u9FFF]{2,5}$)/;
                     if (!regName.test(empName)) {
-                        alert("用户名可以是2-5位中文或者6-16位英文和数字的组合");
+                        // alert("用户名可以是2-5位中文或者6-16位英文和数字的组合");
+                        show_validate_msg("#empName_add_input", "error", "用户名可以是2-5位中文或者6-16位英文和数字的组合");
                         return false;
+                    } else {
+                        show_validate_msg("#empName_add_input", "success", "");
                     }
                     // 2、校验邮箱信息
                     var email = $("#email_add_input").val();
                     var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
                     if (!regEmail.test(email)) {
-                        alert("邮箱格式不正确");
+                        // alert("邮箱格式不正确");
+                        // 应该清空这个元素之前的样式
+                        show_validate_msg("#email_add_input", "error", "邮箱格式不正确");
                         return false;
+                    } else {
+                        show_validate_msg("#email_add_input", "success", "");
                     }
                     return true;
+                }
+
+                function show_validate_msg(ele, status, msg) {
+                    // 清楚当前元素的校验状态
+                    $(ele).parent().removeClass("has-success has-error");
+                    $(ele).next("span").text("");
+                    if ("success" == status) {
+                        $(ele).parent().addClass("has-success");
+                        $(ele).next("span").text("");
+                    } else if ("error" == status) {
+                        $(ele).parent().addClass("has-error");
+                        $(ele).next("span").text(msg);
+                    }
                 }
 
                 // 点击保存，保存员工
