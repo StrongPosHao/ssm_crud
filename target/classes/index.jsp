@@ -351,14 +351,31 @@
                         type: "POST",
                         data: $("#empAddModal form").serialize(),
                         success: function(result) {
-                            // alert(result.msg);
-                            // 员工保存成功
-                            // 1.关闭模态框
-                            $("#empAddModal").modal("hide");
+                            if (result.code === 100) {
+                                // alert(result.msg);
+                                // 员工保存成功
+                                // 1.关闭模态框
+                                $("#empAddModal").modal("hide");
 
-                            // 2.来到最后一页，显示刚才保存的资源
-                            // 发送ajax请求显示最后一夜数据即可
-                            to_page(totalRecord);
+                                // 2.来到最后一页，显示刚才保存的资源
+                                // 发送ajax请求显示最后一夜数据即可
+                                to_page(totalRecord);
+                            } else {
+                                // 显示失败信息
+                                console.log(result);
+                                // 有哪个字段的错误信息就显示哪个字段的
+                                if (undefined !== result.extend.errorFields.email) {
+                                    // 显示邮箱错误信息
+                                    show_validate_msg("#email_add_input", "error", result.extend.errorFields.email);
+                                }
+                                if (undefined !== result.extend.errorFields.empName) {
+                                    // 显示员工名字的错误信息
+                                    show_validate_msg("#empName_add_input", "error", result.extend.errorFields.empName);
+                                }
+                                alert(result.extend.errorFields.email);
+                                alert(result.extend.errorFields.empName);
+                            }
+
                         }
                     });
                 });
