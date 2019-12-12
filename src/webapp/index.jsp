@@ -176,7 +176,7 @@
         <div class="col-md-6" id="page_nav_area">
             <script type="text/javascript">
 
-                var totalRecord;
+                var totalRecord, currentPage;
                 // 1.页面加载完成以后，直接发送一个ajax请求，要到分页数据
                 $(function () {
                     // 去首页
@@ -234,6 +234,7 @@
                     $("#page_info_area").append("当前" + result.extend.pageInfo.pageNum + "页, 总共" +
                         result.extend.pageInfo.pages + "页, 共" + result.extend.pageInfo.total + "条记录")
                     totalRecord = result.extend.pageInfo.total;
+                    currentPage = result.extend.pageInfo.pageNum;
                 }
 
                 // 解析显示分页条, 点击分页要能去下一页...
@@ -453,6 +454,12 @@
                     $("#empUpdateModal").modal({
                         backdrop: "static"
                     });
+
+                    // 3.把员工的id传递给模态框的更新按钮
+                    $("#emp_update_btn").attr("edit-id", $(this).attr("edit-id"));
+                    $("#empUpdateModal").modal({
+                        backdrop: "static"
+                    });
                 });
 
                 function getEmp(id) {
@@ -469,6 +476,34 @@
                         }
                     });
                 }
+
+                // 点击更新，更新员工信息
+                $("#emp_update_btn").click(function () {
+                    // 验证邮箱是否合法
+                    var email = $("#email_update_input").val();
+                    var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+                    if (!regEmail.test(email)) {
+                        show_validate_msg("#email_update_input", "error", "邮箱格式不正确");
+                        return false;
+                    } else {
+                        show_validate_msg("#email_update_input", "success", "");
+                    }
+
+                    // 2. 发送ajax请求保存更新的员工数据
+                    $.ajax({
+                        url: "${APP_PATH}/emp/" + $(this).attr("edit-id"),
+                        type: "PUT",
+                        data: $("#empUpdateModal form").serialize(),
+                        success: function (result) {
+                            //1.关闭对话框
+                            $("#empUpdateModal").modal("hide");
+                            //2.回到本页面
+                            to_page(currentPage);
+                        }
+                    });
+                });
+
+
 
             </script>
         </div>

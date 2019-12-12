@@ -12,6 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,41 @@ public class EmployeeController {
     @Autowired
     EmployeeService employeeService;
 
+    /**
+     * 如果直接发送ajax=PUT形式的请求
+     *
+     * 问题：
+     * 请求体中有数据，但是Employee对象封装不上
+     *
+     * 原因：
+     * 1.Tomcat将请求体中的数据，封装一个map
+     * 2.request.getParameter("empName")就会从这个map中取值
+     * 3.SpringMVC封装POJO对象的时候会把POJO中每个属性的值，request.getParameter("email");
+     *
+     * Tomcat不会封装PUT请求体中的数据为map，只有POST形势的请求才封装请求为map
+     *
+     * 解决方案：
+     * 我们要能支持直接发送PUT之类的请求还要封装请求体中的数值
+     * 1.配置上HttpPutFormContentFilter
+     * 2.他的作用，将请求体中的数据解析包装成一个map
+     * 3.request被重新包装，request.getParameter()被重写，就会从自己封装的map中取数据
+     *
+     * 员工更新方法
+     * @param employee
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value="/emp/{empId}", method=RequestMethod.PUT)
+    public  Msg saveEmp(Employee employee, HttpServletRequest request) {
+        System.out.println("请求体中的值:" + request.getParameter("gender"));
+        employeeService.updateEmp(employee);
+        return Msg.success();
+    }
+    /**
+     * 根据id查询员工
+     * @param id
+     * @return
+     */
     @RequestMapping(value = "/emp/{id}", method = RequestMethod.GET)
     @ResponseBody
     public Msg getEmp(@PathVariable("id") Integer id) {
